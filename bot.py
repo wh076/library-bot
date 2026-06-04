@@ -1,4 +1,9 @@
 import os
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['HTTP_PROXY'] = ''
+os.environ['HTTPS_PROXY'] = ''
+import os
 import telebot
 from dotenv import load_dotenv
 from utils.logger import log_user_action
