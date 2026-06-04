@@ -7,7 +7,7 @@ import os
 import telebot
 from dotenv import load_dotenv
 from utils.logger import log_user_action
-from utils.api_client import get_book_data
+from utils.api_client import get_book_info
 from utils.scraper import scrape_book_quote
 
 load_dotenv()
