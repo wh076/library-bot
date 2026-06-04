@@ -27,20 +27,44 @@ def send_welcome(message):
     bot.reply_to(message, help_text)
 
 @bot.message_handler(commands=['book'])
-def action_book(message):
-    query = message.text.replace('/book', '').strip()
-    if not query:
-        bot.reply_to(message, "Использование: /book Название")
+def handle_book(message):
+    
+    parts = message.text.split(maxsplit=1)
+    if len(parts) < 2:
+        bot.reply_to(message, "❌ Пожалуйста, укажите название книги. Пример: /book Hobbit")
         return
-    data = get_book_data(query)
-    if data.get("found"):
-        response_text = f"📖 Книга: {data['title']}\n✍️ Автор: {data['author']}\n📅 Год: {data['year']}"
-        status_msg = "Success"
+
+    book_title = parts[1]
+    
+    
+    from utils.api_client import get_book_info 
+    book_data = get_book_info(book_title)
+
+    if book_data:
+        
+        text = (
+            f"💡 *Найдена книга:*\n\n"
+            f"标记 📖 *Книга:* {book_data['title']}\n"
+            f"✍️ *Автор:* {book_data['author']}\n"
+            f"📅 *Год издания:* {book_data['year']}\n\n"
+            f"🔗 [Открыть карточку книги на Open Library]({book_data['link']})"
+        )
+
+        
+        if book_data.get('cover_id'):
+            cover_url = f"https://covers.openlibrary.org/b/id/{book_data['cover_id']}-L.jpg"
+            try:
+                bot.send_photo(message.chat.id, cover_url, caption=text, parse_mode='Markdown')
+            except Exception:
+                
+                bot.send_message(message.chat.id, text, parse_mode='Markdown')
+        else:
+            
+            bot.send_message(message.chat.id, text, parse_mode='Markdown')
+ 
+
     else:
-        response_text = f"Книга '{query}' не найдена."
-        status_msg = "Not Found"
-    bot.reply_to(message, response_text)
-    log_user_action(message.from_user.id, message.text, "API Book Search", status_msg)
+        bot.reply_to(message, f"Книга '{book_title}' не найдена.")
 
 @bot.message_handler(commands=['cover'])
 def action_cover(message):
